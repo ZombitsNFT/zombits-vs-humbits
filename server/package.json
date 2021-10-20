@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "loadtest": "colyseus-loadtest loadtest/example.js --room my_room --numClients 2",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\""
   },
   "author": "",
   "license": "UNLICENSED",
@@ -16,7 +17,8 @@
   },
   "homepage": "https://github.com/colyseus/create-colyseus#readme",
   "devDependencies": {
-    "@colyseus/loadtest": "^0.11.0"
+    "@colyseus/loadtest": "^0.11.0",
+    "prettier": "^2.4.1"
   },
   "dependencies": {
     "@colyseus/monitor": "^0.11.0",
