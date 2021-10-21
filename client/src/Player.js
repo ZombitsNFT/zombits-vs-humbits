@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { onlinePlayers, room } from "./SocketServer";
+import socket from "./SocketClient";
 
 export default class Player extends Phaser.GameObjects.Sprite {
   constructor(config) {
@@ -164,12 +164,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
           playerTexturePosition: this.playerTexturePosition,
         });
 
-        room.then((room) =>
-          room.send({
-            event: "PLAYER_CHANGED_MAP",
-            map: world.name,
-          })
-        );
+        socket.emit("PLAYER_CHANGED_MAP", { map: world.name });
       }
     });
   }

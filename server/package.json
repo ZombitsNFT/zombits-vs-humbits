@@ -17,15 +17,9 @@
   },
   "homepage": "https://github.com/colyseus/create-colyseus#readme",
   "devDependencies": {
-    "@colyseus/loadtest": "^0.11.0",
     "prettier": "^2.4.1"
   },
   "dependencies": {
-    "@colyseus/monitor": "^0.11.0",
-    "@colyseus/social": "^0.10.2",
-    "colyseus": "^0.11.0",
-    "cors": "^2.8.5",
-    "express": "^4.16.4",
-    "express-jwt": "^6.0.0"
+    "socket.io": "^4.3.1"
   }
 }

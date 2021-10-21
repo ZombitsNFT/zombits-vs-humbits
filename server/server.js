@@ -1,43 +1,56 @@
-const http = require("http");
-const express = require("express");
-const cors = require("cors");
-const colyseus = require("colyseus");
-const monitor = require("@colyseus/monitor").monitor;
-// const socialRoutes = require("@colyseus/social/express").default;
-
-const PokeWorld = require("./rooms/PokeWorld").PokeWorld;
-
-const port = process.env.PORT || 3000;
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-const server = http.createServer(app);
-const gameServer = new colyseus.Server({
-  server: server,
+const httpServer = require("http").createServer();
+const io = require("socket.io")(httpServer, {
+  cors: { origin: "http://localhost:8081", credentials: true },
+  pingTimeout: 60000,
 });
 
-// register your room handlers
-gameServer
-  .define("poke_world", PokeWorld)
-  .on("create", (room) => console.log("room created:", room.roomId))
-  .on("dispose", (room) => console.log("room disposed:", room.roomId))
-  .on("join", (room, client) => console.log(client.id, "joined", room.roomId))
-  .on("leave", (room, client) => console.log(client.id, "left", room.roomId));
+const port = process.env.PORT || 3000;
+const players = {};
 
-// ToDo: Create a 'chat' room for realtime chatting
+io.on("connection", (socket) => {
+  socket.on("join", () => {
+    console.log(
+      `${socket.id} joined... ${
+        Object.keys(players).length
+      } other players in game`
+    );
 
-/**
- * Register @colyseus/social routes
- *
- * - uncomment if you want to use default authentication (https://docs.colyseus.io/authentication/)
- * - also uncomment the require statement
- */
-// app.use("/", socialRoutes);
+    socket.emit("CURRENT_PLAYERS", players);
 
-// register colyseus monitor AFTER registering your room handlers
-app.use("/colyseus", monitor(gameServer));
+    players[socket.id] = {
+      sessionId: socket.id,
+      map: "town",
+      x: 352, // TODO: initial starting position of player sent to server. try to sync up with clients coords
+      y: 1216,
+    };
 
-gameServer.listen(port);
-console.log(`Listening on ws://localhost:${port}`);
+    socket.broadcast.emit("PLAYER_JOINED", players[socket.id]);
+  });
+
+  socket.on("PLAYER_MOVED", (movement) => {
+    players[socket.id].x = movement.x;
+    players[socket.id].y = movement.y;
+
+    socket.broadcast.emit("PLAYER_MOVED", {
+      ...players[socket.id],
+      position: movement.position,
+    });
+  });
+  socket.on("PLAYER_MOVEMENT_ENDED", (movement) => {
+    socket.broadcast.emit("PLAYER_MOVEMENT_ENDED", {
+      sessionId: socket.id,
+      map: players[socket.id].map,
+      position: movement.position,
+    });
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log(`${socket.id} left... ${reason}`);
+    socket.broadcast.emit("PLAYER_LEFT", players[socket.id]);
+    delete players[socket.id];
+  });
+});
+
+httpServer.listen(port, () =>
+  console.log(`Listening on ws://localhost:${port}`)
+);
