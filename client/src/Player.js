@@ -3,7 +3,7 @@ import socket from "./SocketClient";
 
 export default class Player extends Phaser.GameObjects.Sprite {
   constructor(config) {
-    super(config.scene, config.x, config.y, config.key);
+    super(config.scene, config.x, config.y, config.socketId);
 
     this.scene.add.existing(this);
     this.scene.physics.world.enableBody(this);
@@ -11,7 +11,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
     this.setTexture(
       "currentPlayer",
-      `misa-${this.scene.playerTexturePosition}`
+      `misa-${this.scene.playerTextureDirection}`
     );
 
     // Register cursors for player movement
@@ -52,12 +52,6 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
     // Show player nickname above player
     this.showPlayerNickname();
-
-    // Player door interaction
-    this.doorInteraction();
-
-    // Player world interaction
-    this.worldInteraction();
 
     // Stop any previous movement from the last frame
     this.body.setVelocity(0);
@@ -119,53 +113,5 @@ export default class Player extends Phaser.GameObjects.Sprite {
       this.container.oldPosition = { x: this.x, y: this.y };
       return false;
     }
-  }
-
-  doorInteraction() {
-    this.scene.map.findObject("Doors", (obj) => {
-      if (
-        this.y >= obj.y &&
-        this.y <= obj.y + obj.height &&
-        this.x >= obj.x &&
-        this.x <= obj.x + obj.width
-      ) {
-        console.log("Player is by " + obj.name);
-        if (this.spacebar.isDown) {
-          console.log("Door is open!");
-        }
-      }
-    });
-  }
-
-  worldInteraction() {
-    this.scene.map.findObject("Worlds", (world) => {
-      if (
-        this.y >= world.y &&
-        this.y <= world.y + world.height &&
-        this.x >= world.x &&
-        this.x <= world.x + world.width
-      ) {
-        console.log("Player is by world entry: " + world.name);
-
-        // Get playerTexturePosition from from Worlds object property
-        let playerTexturePosition;
-        if (world.properties)
-          playerTexturePosition = world.properties.find(
-            (property) => property.name === "playerTexturePosition"
-          );
-        if (playerTexturePosition)
-          this.playerTexturePosition = playerTexturePosition.value;
-
-        // Load new level (tiles map)
-        this.scene.registry.destroy();
-        this.scene.events.off();
-        this.scene.scene.restart({
-          map: world.name,
-          playerTexturePosition: this.playerTexturePosition,
-        });
-
-        socket.emit("PLAYER_CHANGED_MAP", { map: world.name });
-      }
-    });
   }
 }

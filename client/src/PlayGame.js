@@ -1,10 +1,10 @@
 import Phaser from "phaser";
 
-import socket from "./SocketClient";
-import Player from "./Player";
 import OnlinePlayer from "./OnlinePlayer";
+import Player from "./Player";
+import socket from "./SocketClient";
 
-const onlinePlayers = [];
+var onlinePlayers = {};
 
 let cursors, socketKey;
 
@@ -17,101 +17,59 @@ export class PlayGame extends Phaser.Scene {
     // Map data
     this.mapName = data.map;
 
-    // Player Texture starter position
-    this.playerTexturePosition = data.playerTexturePosition;
+    // Player Texture starter direction
+    this.playerTextureDirection = data.playerTextureDirection;
 
     // Set container
     this.container = [];
   }
 
   create() {
-    socket.emit("join");
-    socket.on("CURRENT_PLAYERS", (players) => {
-      Object.keys(players).forEach((playerId) => {
-        let player = players[playerId];
-
-        if (playerId !== socket.id) {
-          // ??
-          onlinePlayers[player.sessionId] = new OnlinePlayer({
-            scene: this,
-            playerId: player.sessionId,
-            key: player.sessionId,
-            map: player.map,
-            x: player.x,
-            y: player.y,
-          });
-        }
+    socket.connect();
+    socket.on("disconnect", () => {
+      console.log("Disconnected.");
+      // TODO: move same logic below to "currentPlayers" below?
+      Object.keys(onlinePlayers).forEach((socketId) => {
+        console.log(`Player ${socketId} left.`);
+        onlinePlayers[socketId].destroy();
+        delete onlinePlayers[socketId];
       });
     });
-    socket.on("PLAYER_JOINED", (data) => {
-      if (!onlinePlayers[data.sessionId]) {
-        onlinePlayers[data.sessionId] = new OnlinePlayer({
+    socket.on("currentPlayers", (players) => {
+      Object.values(players).forEach((player) => {
+        onlinePlayers[player.socketId] = new OnlinePlayer({
           scene: this,
-          playerId: data.sessionId,
-          key: data.sessionId,
-          map: data.map,
-          x: data.x,
-          y: data.y,
+          ...player,
         });
-      }
+      });
+      console.log(
+        `${Object.keys(onlinePlayers).length} players online:`,
+        onlinePlayers
+      );
     });
-    socket.on("PLAYER_LEFT", (data) => {
-      if (onlinePlayers[data.sessionId]) {
-        onlinePlayers[data.sessionId].destroy();
-        delete onlinePlayers[data.sessionId];
-      }
+    socket.on("playerJoined", (newPlayer) => {
+      console.log(`Player ${newPlayer.socketId} joined.`);
+      onlinePlayers[newPlayer.socketId] = new OnlinePlayer({
+        scene: this,
+        ...newPlayer,
+      });
     });
-    socket.on("PLAYER_MOVED", (data) => {
-      // If player is in same map
-      if (this.mapName === onlinePlayers[data.sessionId].map) {
-        // If player isn't registered in this scene (map changing bug..)
-        if (!onlinePlayers[data.sessionId].scene) {
-          onlinePlayers[data.sessionId] = new OnlinePlayer({
-            scene: this,
-            playerId: data.sessionId,
-            key: data.sessionId,
-            map: data.map,
-            x: data.x,
-            y: data.y,
-          });
-        }
-        // Start animation and set sprite position
-        onlinePlayers[data.sessionId].isWalking(data.position, data.x, data.y);
-      }
+    socket.on("playerLeft", (player) => {
+      console.log(`Player ${player.socketId} left.`);
+      onlinePlayers[player.socketId].destroy();
+      delete onlinePlayers[player.socketId];
     });
-    socket.on("PLAYER_MOVEMENT_ENDED", (data) => {
-      // If player is in same map
-      if (this.mapName === onlinePlayers[data.sessionId].map) {
-        // If player isn't registered in this scene (map changing bug..)
-        if (!onlinePlayers[data.sessionId].scene) {
-          onlinePlayers[data.sessionId] = new OnlinePlayer({
-            scene: this,
-            playerId: data.sessionId,
-            key: data.sessionId,
-            map: data.map,
-            x: data.x,
-            y: data.y,
-          });
-        }
-        // Stop animation & set sprite texture
-        onlinePlayers[data.sessionId].stopWalking(data.position);
-      }
+    socket.on("playerMoved", (socketId, position) => {
+      // Start animation and set sprite position
+      onlinePlayers[socketId].isWalking(
+        position.direction,
+        position.x,
+        position.y
+      );
     });
-    socket.on("PLAYER_CHANGED_MAP", (data) => {
-      if (onlinePlayers[data.sessionId]) {
-        onlinePlayers[data.sessionId].destroy();
-
-        if (data.map === this.mapName && !onlinePlayers[data.sessionId].scene) {
-          onlinePlayers[data.sessionId] = new OnlinePlayer({
-            scene: this,
-            playerId: data.sessionId,
-            key: data.sessionId,
-            map: data.map,
-            x: data.x,
-            y: data.y,
-          });
-        }
-      }
+    socket.on("playerStopped", (socketId, direction) => {
+      // Stop animation & set sprite texture
+      onlinePlayers[socketId].stopWalking(direction);
     });
 
     this.map = this.make.tilemap({ key: this.mapName });
@@ -154,7 +112,7 @@ export class PlayGame extends Phaser.Scene {
     this.player = new Player({
       scene: this,
       worldLayer: this.worldLayer,
-      key: "player",
+      socketId: "player",
       x: spawnPoint.x,
       y: spawnPoint.y,
     });
@@ -192,8 +150,8 @@ export class PlayGame extends Phaser.Scene {
     if (cursors.left.isDown) {
       if (socketKey) {
         if (this.player.isMoved()) {
-          socket.emit("PLAYER_MOVED", {
-            position: "left",
+          socket.emit("playerMoved", {
+            direction: "left",
             x: this.player.x,
             y: this.player.y,
           });
@@ -203,8 +161,8 @@ export class PlayGame extends Phaser.Scene {
     } else if (cursors.right.isDown) {
       if (socketKey) {
         if (this.player.isMoved()) {
-          socket.emit("PLAYER_MOVED", {
-            position: "right",
+          socket.emit("playerMoved", {
+            direction: "right",
             x: this.player.x,
             y: this.player.y,
           });
@@ -217,8 +175,8 @@ export class PlayGame extends Phaser.Scene {
     if (cursors.up.isDown) {
       if (socketKey) {
         if (this.player.isMoved()) {
-          socket.emit("PLAYER_MOVED", {
-            position: "back",
+          socket.emit("playerMoved", {
+            direction: "back",
             x: this.player.x,
             y: this.player.y,
           });
@@ -228,8 +186,8 @@ export class PlayGame extends Phaser.Scene {
     } else if (cursors.down.isDown) {
       if (socketKey) {
         if (this.player.isMoved()) {
-          socket.emit("PLAYER_MOVED", {
-            position: "front",
+          socket.emit("playerMoved", {
+            direction: "front",
             x: this.player.x,
             y: this.player.y,
           });
@@ -240,24 +198,16 @@ export class PlayGame extends Phaser.Scene {
 
     // Horizontal movement ended
     if (Phaser.Input.Keyboard.JustUp(cursors.left) === true) {
-      socket.emit("PLAYER_MOVEMENT_ENDED", {
-        position: "left",
-      });
+      socket.emit("playerStopped", "left");
     } else if (Phaser.Input.Keyboard.JustUp(cursors.right) === true) {
-      socket.emit("PLAYER_MOVEMENT_ENDED", {
-        position: "right",
-      });
+      socket.emit("playerStopped", "right");
     }
 
     // Vertical movement ended
     if (Phaser.Input.Keyboard.JustUp(cursors.up) === true) {
-      socket.emit("PLAYER_MOVEMENT_ENDED", {
-        position: "back",
-      });
+      socket.emit("playerStopped", "back");
     } else if (Phaser.Input.Keyboard.JustUp(cursors.down) === true) {
-      socket.emit("PLAYER_MOVEMENT_ENDED", {
-        position: "front",
-      });
+      socket.emit("playerStopped", "front");
     }
   }
 

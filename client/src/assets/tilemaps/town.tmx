@@ -3511,15 +3511,4 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="5" name="Doors">
-  <object id="280" name="DoorA" x="251" y="1114.33" width="40.6667" height="20"/>
-  <object id="283" name="DoorB" x="603.667" y="1112.67" width="40.6666" height="20"/>
- </objectgroup>
- <objectgroup id="6" name="Worlds">
-  <object id="291" name="route1" x="192.333" y="1248" width="319" height="32.3333">
-   <properties>
-    <property name="playerTexturePosition" value="back"/>
-   </properties>
-  </object>
- </objectgroup>
 </map>

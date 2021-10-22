@@ -1,8 +1,6 @@
 import TilesTown from "./assets/tilesets/tuxmon-sample-32px-extruded.png";
 import TownJSON from "./assets/tilemaps/town";
 
-import Route1JSON from "./assets/tilemaps/route1";
-
 import AtlasPNG from "./assets/atlas/atlas.png";
 import AtlasJSON from "./assets/atlas/atlas";
 import PlayersAtlasPNG from "./assets/images/players/players.png";
@@ -18,9 +16,6 @@ export class Boot extends Phaser.Scene {
     this.load.image("TilesTown", TilesTown);
     this.load.tilemapTiledJSON("town", TownJSON);
 
-    // Load Route1
-    this.load.tilemapTiledJSON("route1", Route1JSON);
-
     // Load atlas
     this.load.atlas("currentPlayer", AtlasPNG, AtlasJSON);
     this.load.atlas("players", PlayersAtlasPNG, PlayersAtlasJSON);
@@ -31,7 +26,7 @@ export class Boot extends Phaser.Scene {
 
     this.scene.start("playGame", {
       map: "town",
-      playerTexturePosition: "front",
+      playerTextureDirection: "front",
     });
 
     // Create the player's walking animations from the texture currentPlayer. These are stored in the global

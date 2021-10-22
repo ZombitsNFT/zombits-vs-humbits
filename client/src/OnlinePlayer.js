@@ -1,17 +1,14 @@
 import Phaser from "phaser";
 
 export default class OnlinePlayer extends Phaser.GameObjects.Sprite {
-  constructor(config) {
-    super(config.scene, config.x, config.y, config.playerId);
+  constructor({ scene, socketId, x, y }) {
+    super(scene, x, y, socketId);
+    this.map = "town"; //??
 
     this.scene.add.existing(this);
     this.scene.physics.world.enableBody(this);
-    this.scene.physics.add.collider(this, config.worldLayer);
 
     this.setTexture("players", "bob_front.png").setScale(1.9, 2.1);
-
-    this.map = config.map;
-    console.log(`Map of ${config.playerId} is ${this.map}`);
 
     // Player Offset
     this.body.setOffset(0, 24);
@@ -20,13 +17,13 @@ export default class OnlinePlayer extends Phaser.GameObjects.Sprite {
     this.playerNickname = this.scene.add.text(
       this.x - 40,
       this.y - 25,
-      config.playerId
+      socketId
     );
   }
 
-  isWalking(position, x, y) {
+  isWalking(direction, x, y) {
     // Player
-    this.anims.play(`onlinePlayer-${position}-walk`, true);
+    this.anims.play(`onlinePlayer-${direction}-walk`, true);
     this.setPosition(x, y);
 
     // PlayerId
@@ -34,9 +31,9 @@ export default class OnlinePlayer extends Phaser.GameObjects.Sprite {
     this.playerNickname.y = this.y - 25;
   }
 
-  stopWalking(position) {
+  stopWalking(direction) {
     this.anims.stop();
-    this.setTexture("players", `bob_${position}.png`);
+    this.setTexture("players", `bob_${direction}.png`);
   }
 
   destroy() {
