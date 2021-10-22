@@ -6,7 +6,7 @@ import socket from "./SocketClient";
 
 var onlinePlayers = {};
 
-let cursors, socketKey;
+let cursors;
 
 export class PlayGame extends Phaser.Scene {
   constructor() {
@@ -135,8 +135,6 @@ export class PlayGame extends Phaser.Scene {
       .setDepth(30);
 
     this.debugGraphics();
-
-    this.movementTimer();
   }
 
   update(time, delta) {
@@ -148,51 +146,39 @@ export class PlayGame extends Phaser.Scene {
 
     // Horizontal movement
     if (cursors.left.isDown) {
-      if (socketKey) {
-        if (this.player.isMoved()) {
-          socket.emit("playerMoved", {
-            direction: "left",
-            x: this.player.x,
-            y: this.player.y,
-          });
-        }
-        socketKey = false;
+      if (this.player.isMoved()) {
+        socket.emit("playerMoved", {
+          direction: "left",
+          x: this.player.x,
+          y: this.player.y,
+        });
       }
     } else if (cursors.right.isDown) {
-      if (socketKey) {
-        if (this.player.isMoved()) {
-          socket.emit("playerMoved", {
-            direction: "right",
-            x: this.player.x,
-            y: this.player.y,
-          });
-        }
-        socketKey = false;
+      if (this.player.isMoved()) {
+        socket.emit("playerMoved", {
+          direction: "right",
+          x: this.player.x,
+          y: this.player.y,
+        });
       }
     }
 
     // Vertical movement
     if (cursors.up.isDown) {
-      if (socketKey) {
-        if (this.player.isMoved()) {
-          socket.emit("playerMoved", {
-            direction: "back",
-            x: this.player.x,
-            y: this.player.y,
-          });
-        }
-        socketKey = false;
+      if (this.player.isMoved()) {
+        socket.emit("playerMoved", {
+          direction: "back",
+          x: this.player.x,
+          y: this.player.y,
+        });
       }
     } else if (cursors.down.isDown) {
-      if (socketKey) {
-        if (this.player.isMoved()) {
-          socket.emit("playerMoved", {
-            direction: "front",
-            x: this.player.x,
-            y: this.player.y,
-          });
-        }
-        socketKey = false;
+      if (this.player.isMoved()) {
+        socket.emit("playerMoved", {
+          direction: "front",
+          x: this.player.x,
+          y: this.player.y,
+        });
       }
     }
 
@@ -209,12 +195,6 @@ export class PlayGame extends Phaser.Scene {
     } else if (Phaser.Input.Keyboard.JustUp(cursors.down) === true) {
       socket.emit("playerStopped", "front");
     }
-  }
-
-  movementTimer() {
-    setInterval(() => {
-      socketKey = true;
-    }, 50);
   }
 
   debugGraphics() {
