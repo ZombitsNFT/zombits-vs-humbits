@@ -148,7 +148,7 @@ export default class Adventure extends Phaser.Scene {
     this.socket.emit("playerJoined", { character: this.chosenCharacter, x, y });
     this.socket.on("disconnect", (reason) => {
       console.log("Disconnected.", reason);
-      if (reason === "transport close") {
+      if (reason !== "io client disconnect") {
         this.socket.disconnect();
         this.scene.start("info", { message: "Disconnected from server." });
       }
@@ -203,6 +203,9 @@ export default class Adventure extends Phaser.Scene {
       }
     );
     this.socket.on("playerLeft", (socketId) => {
+      if (!this.onlinePlayers[socketId]) {
+        return;
+      }
       this.addChatMessage(
         `${getCharacterName(this.onlinePlayers[socketId].character)} left.`
       );

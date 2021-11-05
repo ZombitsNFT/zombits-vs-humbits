@@ -28,15 +28,15 @@ const handleConnection = (socket) => {
 
 // Handle player joining
 const handlePlayerJoin = (socket, { character, x, y }) => {
-  // // TODO: check if Zombits is already in server
-  // const characterAlreadyJoined = Object.keys(players).some(
-  //   (socketId) => players[socketId].character === character
-  // );
-  // if (characterAlreadyJoined) {
-  //   console.log("Player already joined.");
-  //   socket.disconnect();
-  //   return;
-  // }
+  // If same character is joined, disconnect them
+  const sameJoinedCharacter = Object.keys(players).find(
+    (socketId) => players[socketId].character === character
+  );
+  if (sameJoinedCharacter) {
+    const alreadyJoinedClient = io.sockets.sockets.get(sameJoinedCharacter);
+    alreadyJoinedClient.disconnect();
+  }
+
   const newPlayer = {
     socketId: socket.id,
     x,
@@ -56,10 +56,11 @@ const handlePlayerJoin = (socket, { character, x, y }) => {
 
 // Handle player leaving
 const handlePlayerLeave = (socket, reason) => {
-  console.log("Player left...", {
+  console.log("Player left (socket closed)...", {
     socketId: socket.id,
     character: players[socket.id].character,
     reason,
+    onlinePlayers: Object.keys(players).length - 1,
   });
   socket.broadcast.emit("playerLeft", socket.id);
   delete players[socket.id];
