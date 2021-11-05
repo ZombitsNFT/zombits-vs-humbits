@@ -35,6 +35,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: "./index.html",
+      favicon: "./src/assets/favicon.ico",
     }),
   ],
 };
