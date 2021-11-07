@@ -82,12 +82,12 @@ export default class ChooseCharacter extends Phaser.Scene {
 
     const zombits = Array.from(
       await getAssetNames(
-        "bb71778877dbf715be01386436dfb5bfb2f903108de95c81886bb414"
+        "ad6290066292cfeef7376cd575e5d8367833ab3d8b2ac53d26ae4ecc"
       )
     );
     const humbits = Array.from(
       await getAssetNames(
-        "bb71778877dbf715be01386436dfb5bfb2f903108de95c81886bb413"
+        "d44cba92bdb8e40360c3979cdc2cf289cdc3aed44e4f3f2bf8aa6def"
       )
     );
 
