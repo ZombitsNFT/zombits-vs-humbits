@@ -4,7 +4,9 @@ const httpServer = require("https").createServer({
   cert: fs.readFileSync("tls/api_zombits_io.crt"),
   ca: fs.readFileSync("tls/api_zombits_io.ca-bundle"),
 });
-const io = require("socket.io")(httpServer);
+const io = require("socket.io")(httpServer, {
+  cors: { origin: "https://play.zombits.io" },
+);
 
 // Dictionary of players currently connected to the server
 const players = {};
