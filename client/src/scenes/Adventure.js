@@ -48,7 +48,7 @@ export default class Adventure extends Phaser.Scene {
   }
 
   create() {
-    this.socket = io("ws://api.zombits.io", { secure: true });
+    this.socket = io("wss://api.zombits.io", { secure: true });
     this.map = this.make.tilemap({ key: "mapTilemap" });
 
     const zombitsSpawnPoint = this.map.findObject(

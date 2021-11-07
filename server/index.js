@@ -4,9 +4,7 @@ const httpServer = require("https").createServer({
   cert: fs.readFileSync("tls/api_zombits_io.crt"),
   ca: fs.readFileSync("tls/api_zombits_io.ca-bundle"),
 });
-const io = require("socket.io")(httpServer, {
-  cors: { origin: "http://localhost:8080" }, // TODO: May not need CORS when hosted under same domain
-});
+const io = require("socket.io")(httpServer);
 
 // Dictionary of players currently connected to the server
 const players = {};
