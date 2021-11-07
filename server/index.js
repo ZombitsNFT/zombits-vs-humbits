@@ -58,7 +58,7 @@ const handlePlayerJoin = (socket, { character, x, y }) => {
 const handlePlayerLeave = (socket, reason) => {
   console.log("Player left (socket closed)...", {
     socketId: socket.id,
-    character: players[socket.id].character,
+    character: players[socket.id] && players[socket.id].character,
     reason,
     onlinePlayers: Object.keys(players).length - 1,
   });

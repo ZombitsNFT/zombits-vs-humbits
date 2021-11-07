@@ -14,7 +14,6 @@ export default class Adventure extends Phaser.Scene {
 
   init() {
     this.chosenCharacter = this.registry.get("chosenCharacter");
-    this.socket = io("ws://localhost:3000");
 
     this.onlinePlayers = {};
     this.chatMessages = [];
@@ -49,11 +48,24 @@ export default class Adventure extends Phaser.Scene {
   }
 
   create() {
-    // TODO: change depending on zombit/humbit
-    const x = 100;
-    const y = 400;
-
+    this.socket = io("ws://localhost:3000");
     this.map = this.make.tilemap({ key: "mapTilemap" });
+
+    const zombitsSpawnPoint = this.map.findObject(
+      "spawn",
+      (gameObject) => gameObject.name === "zombitsSpawn"
+    );
+    const humbitsSpawnPoint = this.map.findObject(
+      "spawn",
+      (gameObject) => gameObject.name === "humbitsSpawn"
+    );
+
+    const x = isZombitName(this.chosenCharacter)
+      ? zombitsSpawnPoint.x
+      : humbitsSpawnPoint.x;
+    const y = isZombitName(this.chosenCharacter)
+      ? zombitsSpawnPoint.y
+      : humbitsSpawnPoint.y;
 
     this.scene.scene.physics.world.setBounds(
       0,
