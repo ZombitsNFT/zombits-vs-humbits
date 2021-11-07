@@ -6,7 +6,7 @@ const httpServer = require("https").createServer({
 });
 const io = require("socket.io")(httpServer, {
   cors: { origin: "https://play.zombits.io" },
-);
+});
 
 // Dictionary of players currently connected to the server
 const players = {};
