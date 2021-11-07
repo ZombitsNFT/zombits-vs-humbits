@@ -48,7 +48,7 @@ export default class Adventure extends Phaser.Scene {
   }
 
   create() {
-    this.socket = io("ws://localhost:3000");
+    this.socket = io("ws://api.zombits.io", { secure: true });
     this.map = this.make.tilemap({ key: "mapTilemap" });
 
     const zombitsSpawnPoint = this.map.findObject(
@@ -166,7 +166,7 @@ export default class Adventure extends Phaser.Scene {
       }
     });
     this.socket.on("connect_error", (err) => {
-      console.log("Error connectiong...");
+      console.log("Error connecting...");
       this.socket.disconnect();
       this.scene.start("info", { message: "Couldn't connect to server." });
     });

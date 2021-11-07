@@ -1,4 +1,9 @@
-const httpServer = require("http").createServer();
+const fs = require("fs");
+const httpServer = require("https").createServer({
+  key: fs.readFileSync("tls/api_zombits_io.key"),
+  cert: fs.readFileSync("tls/api_zombits_io.crt"),
+  ca: fs.readFileSync("tls/api_zombits_io.ca-bundle"),
+});
 const io = require("socket.io")(httpServer, {
   cors: { origin: "http://localhost:8080" }, // TODO: May not need CORS when hosted under same domain
 });
