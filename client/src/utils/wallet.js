@@ -30,13 +30,18 @@ export const getAssetNames = async (policyId) => {
     ).to_bytes()
   );
 
-  const walletAssets = value.multiasset().get(policyHash);
   const result = new Set();
-  if (walletAssets) {
-    const assetNames = walletAssets.keys();
-    for (let i = 0; i < assetNames.len(); i++) {
-      result.add(Buffer.from(assetNames.get(i).name()).toString());
-    }
+  const walletMultiasset = value.multiasset();
+  if (!walletMultiasset) {
+    return result;
+  }
+  const walletAssets = walletMultiasset.get(policyHash);
+  if (!walletAssets) {
+    return result;
+  }
+  const assetNames = walletAssets.keys();
+  for (let i = 0; i < assetNames.len(); i++) {
+    result.add(Buffer.from(assetNames.get(i).name()).toString());
   }
   return result;
 };

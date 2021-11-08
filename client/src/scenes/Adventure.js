@@ -266,11 +266,13 @@ export default class Adventure extends Phaser.Scene {
   update(time, delta) {
     this.currentPlayer.update(time, delta);
 
+    const lag = 50;
     if (
-      this.cursors.left.isDown ||
-      this.cursors.right.isDown ||
-      this.cursors.up.isDown ||
-      this.cursors.down.isDown
+      (this.cursors.left.isDown ||
+        this.cursors.right.isDown ||
+        this.cursors.up.isDown ||
+        this.cursors.down.isDown) &&
+      (time % lag < (time - delta) % lag || delta >= lag) // Add lag to go easy on the server.
     ) {
       this.socket.emit("playerMoved", {
         direction: this.currentPlayer.getDirection(),
