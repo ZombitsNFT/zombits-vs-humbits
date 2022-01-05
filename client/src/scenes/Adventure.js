@@ -232,9 +232,15 @@ export default class Adventure extends Phaser.Scene {
       );
     });
     this.socket.on("playerMoved", (socketId, { x, y, direction }) => {
+      if (!this.onlinePlayers[socketId]) {
+        return;
+      }
       this.onlinePlayers[socketId].startWalking(x, y, direction);
     });
     this.socket.on("playerStopped", (socketId) => {
+      if (!this.onlinePlayers[socketId]) {
+        return;
+      }
       this.onlinePlayers[socketId].stopWalking();
     });
     this.socket.on("playerChat", ({ character, message }) => {
