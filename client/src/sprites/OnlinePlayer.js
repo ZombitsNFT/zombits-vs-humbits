@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { getCharacterName } from "../utils/string";
+import { getCharacterName, isHumbitName } from "../utils/string";
 
 export default class OnlinePlayer extends Phaser.GameObjects.Sprite {
   constructor({ scene, x, y, character, direction }) {
@@ -13,7 +13,9 @@ export default class OnlinePlayer extends Phaser.GameObjects.Sprite {
     this.scene.physics.world.enableBody(this);
     this.scene.load.spritesheet(
       this.character,
-      `src/assets/spritesheets/humbits/${this.character}.png`,
+      `src/assets/spritesheets/${
+        isHumbitName(this.character) ? "humbits" : "zombits"
+      }/${this.character}.png`,
       {
         frameWidth: 24,
         frameHeight: 24,
@@ -49,7 +51,9 @@ export default class OnlinePlayer extends Phaser.GameObjects.Sprite {
   }
 
   startWalking(x, y, direction) {
-    this.anims.play(`${this.texture.key}-walk`, true);
+    if (this.anims) {
+      this.anims.play(`${this.texture.key}-walk`, true);
+    }
     if (direction === "left") {
       this.setFlipX(true);
     } else if (direction === "right") {
@@ -63,7 +67,9 @@ export default class OnlinePlayer extends Phaser.GameObjects.Sprite {
   }
 
   stopWalking() {
-    this.anims.stop();
+    if (this.anims) {
+      this.anims.stop();
+    }
     this.setFrame(0);
   }
 

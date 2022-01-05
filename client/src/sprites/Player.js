@@ -58,14 +58,18 @@ export default class Player extends Phaser.GameObjects.Sprite {
       this.cursors.up.isDown ||
       this.cursors.down.isDown
     ) {
-      this.anims.play(`${this.texture.key}-walk`, true);
+      if (this.anims) {
+        this.anims.play(`${this.texture.key}-walk`, true);
+      }
       if (this.cursors.left.isDown) {
         this.setFlipX(true);
       } else if (this.cursors.right.isDown) {
         this.setFlipX(false);
       }
     } else {
-      this.anims.stop();
+      if (this.anims) {
+        this.anims.stop();
+      }
       this.setFrame(0);
     }
   }
